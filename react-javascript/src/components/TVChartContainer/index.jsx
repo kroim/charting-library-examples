@@ -10,10 +10,10 @@ function getLanguageFromURL() {
 
 export class TVChartContainer extends React.PureComponent {
 	static defaultProps = {
-		symbol: 'AAPL',
-		interval: 'D',
+		symbol: 'KCS',
+		interval: '1H',
 		containerId: 'tv_chart_container',
-		datafeedUrl: 'https://demo_feed.tradingview.com',
+		datafeedUrl: 'http://localhost:5000',
 		libraryPath: '/charting_library/',
 		chartsStorageUrl: 'https://saveload.tradingview.com',
 		chartsStorageApiVersion: '1.1',
@@ -25,8 +25,9 @@ export class TVChartContainer extends React.PureComponent {
 	};
 
 	tvWidget = null;
-
+	
 	componentDidMount() {
+		console.log("componentDidMount");
 		const widgetOptions = {
 			symbol: this.props.symbol,
 			// BEWARE: no trailing slash is expected in feed URL
@@ -36,8 +37,8 @@ export class TVChartContainer extends React.PureComponent {
 			library_path: this.props.libraryPath,
 
 			locale: getLanguageFromURL() || 'en',
-			disabled_features: ['use_localstorage_for_settings'],
-			enabled_features: ['study_templates'],
+			disabled_features: ['use_localstorage_for_settings','header_compare','header_indicators','header_settings','header_saveload','header_screenshot','header_fullscreen_button','left_toolbar','timeframes_toolbar','display_market_status','symbol_info'],
+			enabled_features: [],
 			charts_storage_url: this.props.chartsStorageUrl,
 			charts_storage_api_version: this.props.chartsStorageApiVersion,
 			client_id: this.props.clientId,
@@ -48,28 +49,24 @@ export class TVChartContainer extends React.PureComponent {
 		};
 
 		const tvWidget = new widget(widgetOptions);
-		this.tvWidget = tvWidget;
+		widgetOptions.datafeed.onReady(function(configuration) {
 
-		tvWidget.onChartReady(() => {
-			tvWidget.headerReady().then(() => {
-				const button = tvWidget.createButton();
-				button.setAttribute('title', 'Click to show a notification popup');
-				button.classList.add('apply-common-tooltip');
-				button.addEventListener('click', () => tvWidget.showNoticeDialog({
-					title: 'Notification',
-					body: 'TradingView Charting Library API works correctly',
-					callback: () => {
-						console.log('Noticed!');
-					},
-				}));
-
-				button.innerHTML = 'Check API';
+			// configuration.supported_resolutions = ["1", "3", "5", "15", "30", "45", "60", "120", "180", "240", "1D", "1W", "1M"]
+			// configuration.supports_marks = false
+			// configuration.supports_timescale_marks = false
+		});		
+		this.tvWidget = tvWidget;		
+		tvWidget.onChartReady(() => {			
+			tvWidget.headerReady().then(() => {				
+							
 			});
 		});
+			
 	}
 
 	componentWillUnmount() {
-		if (this.tvWidget !== null) {
+		console.log("componentWillUnmount");
+		if (this.tvWidget !== null) {			
 			this.tvWidget.remove();
 			this.tvWidget = null;
 		}
